@@ -1,9 +1,9 @@
-{-# LANGUAGE BangPatterns    #-}
-{-# LANGUAGE CPP             #-}
-{-# LANGUAGE MagicHash       #-}
-{-# LANGUAGE RankNTypes      #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE UnboxedTuples   #-}
+{-# LANGUAGE BangPatterns  #-}
+{-# LANGUAGE CPP           #-}
+{-# LANGUAGE MagicHash     #-}
+{-# LANGUAGE RankNTypes    #-}
+
+{-# LANGUAGE UnboxedTuples #-}
 
 -- |
 -- Module      :  Data.Attoparsec.Text.Buffer
@@ -166,13 +166,13 @@ iter_ (Buf arr off _ _ _) i | m < 0xD800 || m > 0xDBFF = 1
 {-# INLINE iter_ #-}
 
 unsafeThaw :: A.Array -> ST s (A.MArray s)
-unsafeThaw A.Array{..} = ST $ \s# ->
-                          (# s#, A.MArray (unsafeCoerce# aBA) #)
+unsafeThaw aBa = ST $ \s# ->
+                          (# s#, unsafeCoerce# aBA #)
 
 readGen :: A.Array -> Int
-readGen a = case indexIntArray# (A.aBA a) 0# of r# -> I# r#
+readGen (A.ByteArray a) = case indexIntArray# a 0# of r# -> I# r#
 
 writeGen :: A.MArray s -> Int -> ST s ()
-writeGen a (I# gen#) = ST $ \s0# ->
-  case writeIntArray# (A.maBA a) 0# gen# s0# of
+writeGen (A.MutableByteArray a) (I# gen#) = ST $ \s0# ->
+  case writeIntArray# a 0# gen# s0# of
     s1# -> (# s1#, () #)
