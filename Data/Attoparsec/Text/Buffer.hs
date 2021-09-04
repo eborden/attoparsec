@@ -1,5 +1,9 @@
-{-# LANGUAGE BangPatterns, CPP, MagicHash, RankNTypes, RecordWildCards,
-    UnboxedTuples #-}
+{-# LANGUAGE BangPatterns    #-}
+{-# LANGUAGE CPP             #-}
+{-# LANGUAGE MagicHash       #-}
+{-# LANGUAGE RankNTypes      #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE UnboxedTuples   #-}
 
 -- |
 -- Module      :  Data.Attoparsec.Text.Buffer
@@ -37,21 +41,23 @@ module Data.Attoparsec.Text.Buffer
     , dropWord16
     ) where
 
-import Control.Exception (assert)
-import Data.Bits (shiftR)
-import Data.List (foldl1')
-import Data.Monoid as Mon (Monoid(..))
-import Data.Semigroup (Semigroup(..))
-import Data.Text ()
-import Data.Text.Internal (Text(..))
-import Data.Text.Internal.Encoding.Utf16 (chr2)
-import Data.Text.Internal.Unsafe.Char (unsafeChr)
-import Data.Text.Unsafe (Iter(..))
-import Foreign.Storable (sizeOf)
-import GHC.Exts (Int(..), indexIntArray#, unsafeCoerce#, writeIntArray#)
-import GHC.ST (ST(..), runST)
-import Prelude hiding (length)
-import qualified Data.Text.Array as A
+import           Control.Exception                 (assert)
+import           Data.Bits                         (shiftR)
+import           Data.List                         (foldl1')
+import           Data.Monoid                       as Mon (Monoid (..))
+import           Data.Semigroup                    (Semigroup (..))
+import           Data.Text                         ()
+import qualified Data.Text.Array                   as A
+import           Data.Text.Internal                (Text (..))
+import           Data.Text.Internal.Encoding.Utf16 (chr2)
+import           Data.Text.Internal.Unsafe.Char    (unsafeChr16)
+import           Data.Text.Unsafe                  (Iter (..))
+import           Foreign.Storable                  (sizeOf)
+import           GHC.Exts                          (Int (..), indexIntArray#,
+                                                    unsafeCoerce#,
+                                                    writeIntArray#)
+import           GHC.ST                            (ST (..), runST)
+import           Prelude                           hiding (length)
 
 -- If _cap is zero, this buffer is empty.
 data Buffer = Buf {
@@ -143,7 +149,7 @@ dropWord16 s (Buf arr off len _ _) =
 -- the next offset to iterate at.
 iter :: Buffer -> Int -> Iter
 iter (Buf arr off _ _ _) i
-    | m < 0xD800 || m > 0xDBFF = Iter (unsafeChr m) 1
+    | m < 0xD800 || m > 0xDBFF = Iter (unsafeChr16 m) 1
     | otherwise                = Iter (chr2 m n) 2
   where m = A.unsafeIndex arr j
         n = A.unsafeIndex arr k
